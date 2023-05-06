@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(
-    ['sc_standalone.py'],
+    ['f:/git/nichetools/sharedclipboard/sc_standalone.py'],
     pathex=[],
     binaries=[],
     datas=[],

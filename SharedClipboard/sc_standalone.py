@@ -4,8 +4,12 @@ import json
 import textwrap
 import os
 import time
+import shutil
 
 tabulate.PRESERVE_WHITESPACE = True
+
+TERMINAL_WIDTH = shutil.get_terminal_size()[0]
+TERMINAL_HEIGHT = shutil.get_terminal_size()[1]
 
 SAVED_DATA = f"{os.getcwd()}/clipboard.json"
 
@@ -41,8 +45,8 @@ def tabulated_data(_data):
     formatted_data = {"KEY": [key for key in _data.keys()],
                       "VALUE": [value for value in _data.values()]}
     data_table = tabulate(formatted_data, headers=["KEYS", "VALUES"],
-                          tablefmt="grid", maxcolwidths=[1, 15, 50],
-                          showindex=range(1, len([item for item in formatted_data["KEY"]]) + 1))
+                          tablefmt="grid", maxcolwidths=[2, KEY_WIDTH, VALUE_WIDTH],
+                          showindex=[index for index, key in enumerate(data, 1)])
     return data_table
 
 
@@ -89,11 +93,43 @@ def help_text():
         """))
 
 
+def save_validation(_key):
+    key = _key
+    while key in data.keys():
+        print(f"Key '{key}' already exists; overwrite it?")
+        confirmation = input("Y/N |> ")
+
+        if confirmation.casefold() == "y":
+            print(f"Key: '{key}' will be overwritten...")
+            return key
+        else:
+            key = input("Enter a new key to save against: ")
+    else:
+        return key
+
+
 def save(_parameter):
     if len(_parameter) > 0:
         key = _parameter
     else:
         key = input("Enter a key to save the value against: ")
+
+    while True:
+        if key.isdigit():
+            print("The key cannot be a number!")
+            key = input("Please name the key to be saved against: ")
+        elif len(key.strip()) < 1:
+            print("Blank keys are unacceptable!")
+            key = input("Please provide a key to save against: ")
+        else:
+            break
+
+    if key == "\\":
+        print("Saving cancelled!")
+        return
+
+    if key in data.keys():
+        key = save_validation(key)
 
     print("Storing value...")
     data[key] = clipboard.paste()
@@ -106,6 +142,18 @@ def load(_parameter):
         key = _parameter
     else:
         key = input("Enter a key to be loaded: ")
+
+    if key.isdigit():
+        try:
+            key_digit = key
+            key = next(key for index, key in enumerate(data, 1) if index == int(key_digit))
+            print(key)
+        except StopIteration:
+            pass
+
+    if key == "\\":
+        print("Loading cancelled!")
+        return
 
     if key in data:
         clipboard.copy(data[key])
@@ -127,10 +175,24 @@ def delete(_parameter):
     else:
         key = input("Enter a key to be deleted: ")
 
-    print(f"Deleting '{key}' from persistent clipboard...")
-    data.pop(key)
-    save_data(SAVED_DATA, data)
-    print(f"'{key}' deleted successfully!")
+    if key.isdigit():
+        try:
+            key_digit = key
+            key = next(key for index, key in enumerate(data, 1) if index == int(key_digit))
+        except StopIteration:
+            pass
+
+    if key == "\\":
+        print("Deletion cancelled!")
+        return
+
+    if key in data:
+        print(f"Deleting '{key}' from persistent clipboard...")
+        data.pop(key)
+        save_data(SAVED_DATA, data)
+        print(f"'{key}' deleted successfully!")
+    else:
+        print("No such key exists!")
 
 
 def wipe():
@@ -195,6 +257,8 @@ blurb()
 
 print("Please enter a command: ")
 while True:
+    KEY_WIDTH = TERMINAL_WIDTH * 0.10
+    VALUE_WIDTH = TERMINAL_WIDTH * 0.80
     user_input = list(input("|> ").split())
     data = load_data(SAVED_DATA)
 
