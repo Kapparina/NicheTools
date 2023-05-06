@@ -7,8 +7,16 @@ import time
 
 tabulate.PRESERVE_WHITESPACE = True
 
-
 SAVED_DATA = f"{os.getcwd()}/clipboard.json"
+
+ALL_COMMANDS = {"help": ["help", "?"],
+                "save": ["save", "s"],
+                "load": ["load", "l"],
+                "view": ["all", "a"],
+                "delete": ["delete", "del", "d"],
+                "wipe": ["wipe", "w", "clear"],
+                "quit": ["quit", "q"],
+                }
 
 
 def save_data(_file_path, _data):
@@ -62,75 +70,83 @@ def help_text():
         Available commands include:
         |> 'save' (ie: CTRL + V): 
         | Saves/pastes the contents of your clipboard.
-        
+
         |> 'load' (ie: CTRL + C): 
         | Loads/copies the value of a specified key to your clipboard.
-        
+
         |> 'all' (ie: 'see all'): 
         | Lists the currently stored items.
-        
+
         |> 'delete' (ie: 'remove'): 
         | Deletes/removes the value at the specified key from storage.
-        
+
         |> 'wipe' (ie: 'clear'): 
         | Clears/wipes all data previously stored.
-        
+
         |> 'quit' (ie: 'exit'):
         | Exits the application after asking whether to clean up. 
         _________________________________________________
         """))
 
 
-def main(_command):
-    if _command == "save" or _command == "s" or _command == "p":
-        key = input("Enter a key to save the value against: ")
-        data[key] = clipboard.paste()
-        print(f"Value stored at key: '{key}'.")
-        save_data(SAVED_DATA, data)
-
-    elif _command == "load" or _command == "l" or _command == "c":
-        key = input("Enter a key to be loaded: ")
-        if key in data:
-            clipboard.copy(data[key])
-            print(f"'{key}' value copied to clipboard!")
-        else:
-            print("Key does not exist!")
-
-    elif _command == "all" or _command == "a" or _command == "list":
-        if len(data.keys()) < 1:
-            print("No values available to list!")
-        else:
-            print(f"\n{tabulated_data(data)}\n")
-
-    elif _command == "delete" or _command == "d":
-        key = input("Enter a key to be deleted: ")
-        print(f"Deleting '{key}' from persistent clipboard...")
-        data.pop(key)
-        save_data(SAVED_DATA, data)
-        print(f"'{key}' deleted successfully!")
-
-    elif _command == "wipe" or _command == "w":
-        print("Are you sure you like to clear all stored values?")
-        key = input("Y/N |> ")
-        if key.casefold() == "y":
-            print("Clearing stored items...")
-            data.clear()
-            print("Stored items cleared successfully!")
-            save_data(SAVED_DATA, data)
-        else:
-            print("Retaining currently stored items...")
-
-    elif _command == "":
-        print("Please provide a command, or type 'help' or '?' for a list of commands.")
-
-    elif _command == "help" or _command == "?":
-        help_text()
-
+def save(_parameter):
+    if len(_parameter) > 0:
+        key = _parameter
     else:
-        print("Unknown command!")
+        key = input("Enter a key to save the value against: ")
+
+    print("Storing value...")
+    data[key] = clipboard.paste()
+    save_data(SAVED_DATA, data)
+    print(f"Value stored at key: '{key}' successfully!")
 
 
-def clear_on_exit():
+def load(_parameter):
+    if len(_parameter) > 0:
+        key = _parameter
+    else:
+        key = input("Enter a key to be loaded: ")
+
+    if key in data:
+        clipboard.copy(data[key])
+        print(f"'{key}' value copied to clipboard!")
+    else:
+        print("No such key exists!")
+
+
+def view_all():
+    if len(data.keys()) > 0:
+        print(f"\n{tabulated_data(data)}\n")
+    else:
+        print("No values available to list!")
+
+
+def delete(_parameter):
+    if len(_parameter) > 0:
+        key = _parameter
+    else:
+        key = input("Enter a key to be deleted: ")
+
+    print(f"Deleting '{key}' from persistent clipboard...")
+    data.pop(key)
+    save_data(SAVED_DATA, data)
+    print(f"'{key}' deleted successfully!")
+
+
+def wipe():
+    print("Are you sure you like to clear all stored values?")
+    confirmation = input("Y/N |> ")
+
+    if confirmation.casefold() == "y":
+        print("Clearing stored items...")
+        data.clear()
+        save_data(SAVED_DATA, data)
+        print("Stored items cleared successfully!")
+    else:
+        print("Retaining currently stored items...")
+
+
+def quit_cleanup():
     print("Would you like to clear stored values before exiting?")
     confirmation = input("Y/N |> ")
 
@@ -142,16 +158,48 @@ def clear_on_exit():
         print("Retaining stored values...")
 
 
+def main(_user_input: list):
+    command = _user_input[0]
+    try:
+        parameter = _user_input[1]
+    except IndexError:
+        parameter = str()
+
+    if any(command in value for value in ALL_COMMANDS.values()):
+        command: list = [key for key, value in ALL_COMMANDS.items() if command in value]
+        command: str = command[0]
+        if command == "save":
+            save(parameter)
+        elif command == "load":
+            load(parameter)
+        elif command == "view":
+            view_all()
+        elif command == "delete":
+            delete(parameter)
+        elif command == "wipe":
+            wipe()
+        elif command == "quit":
+            quit_cleanup()
+            print("Quitting application...")
+            time.sleep(1)
+            quit()
+        elif command == "help":
+            help_text()
+    elif command == str():
+        print("Please provide a command, or type 'help' or '?' for a list of commands.")
+    else:
+        print("Unknown command!")
+
+
 blurb()
 
 print("Please enter a command: ")
 while True:
-    user_command = input("|> ").casefold()
-    if user_command == "q" or user_command == "quit":
-        clear_on_exit()
-        print("Quitting application...")
-        time.sleep(1)
-        break
-    else:
-        data = load_data(SAVED_DATA)
-        main(user_command)
+    user_input = list(input("|> ").split())
+    data = load_data(SAVED_DATA)
+
+    if len(user_input) <= 2:
+        main(user_input)
+    elif len(user_input) > 2:
+        print("Too many parameters entered!")
+

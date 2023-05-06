@@ -3,7 +3,7 @@ import pyperclip as clipboard
 import json
 import textwrap
 import os
-import pandas as pd
+
 
 SAVED_DATA = f"{os.getcwd()}/clipboard.json"
 
