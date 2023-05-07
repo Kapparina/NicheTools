@@ -147,7 +147,6 @@ def load(_parameter):
         try:
             key_digit = key
             key = next(key for index, key in enumerate(data, 1) if index == int(key_digit))
-            print(key)
         except StopIteration:
             pass
 
@@ -221,7 +220,7 @@ def quit_cleanup():
 
 
 def main(_user_input: list):
-    command = _user_input[0]
+    command = _user_input[0].casefold()
     try:
         parameter = _user_input[1]
     except IndexError:
