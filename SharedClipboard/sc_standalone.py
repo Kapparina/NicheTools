@@ -3,13 +3,11 @@ from tabulate import tabulate
 import json
 import textwrap
 import os
+import sys
 import time
 import shutil
 
 tabulate.PRESERVE_WHITESPACE = True
-
-TERMINAL_WIDTH = shutil.get_terminal_size()[0]
-TERMINAL_HEIGHT = shutil.get_terminal_size()[1]
 
 SAVED_DATA = f"{os.getcwd()}/clipboard.json"
 
@@ -41,11 +39,18 @@ def load_data(_file_path):
         return {}
 
 
+def terminal_dimensions():
+    terminal_width = shutil.get_terminal_size()[0]
+    return terminal_width
+
+
 def tabulated_data(_data):
     formatted_data = {"KEY": [key for key in _data.keys()],
                       "VALUE": [value for value in _data.values()]}
+    key_width = terminal_dimensions() * 0.10
+    value_width = terminal_dimensions() * 0.70
     data_table = tabulate(formatted_data, headers=["KEYS", "VALUES"],
-                          tablefmt="grid", maxcolwidths=[2, KEY_WIDTH, VALUE_WIDTH],
+                          tablefmt="grid", maxcolwidths=[2, key_width, value_width],
                           showindex=[index for index, key in enumerate(data, 1)])
     return data_table
 
@@ -72,6 +77,7 @@ def help_text():
     print(textwrap.dedent(f"""
         _________________________________________________
         Available commands include:
+        
         |> 'save' (ie: CTRL + V): 
         | Saves/pastes the contents of your clipboard.
 
@@ -220,9 +226,12 @@ def quit_cleanup():
 
 
 def main(_user_input: list):
-    command = _user_input[0].casefold()
     try:
-        parameter = _user_input[1]
+        command: str = _user_input[0].casefold()
+    except IndexError:
+        command = str()
+    try:
+        parameter: str = _user_input[1]
     except IndexError:
         parameter = str()
 
@@ -241,28 +250,24 @@ def main(_user_input: list):
             wipe()
         elif command == "quit":
             quit_cleanup()
-            print("Quitting application...")
+            print("\nQuitting application...")
             time.sleep(1)
-            quit()
+            sys.exit()
         elif command == "help":
             help_text()
     elif command == str():
-        print("Please provide a command, or type 'help' or '?' for a list of commands.")
+        print("\nPlease provide a command, or type 'help' or '?' for a list of commands.")
     else:
-        print("Unknown command!")
+        print("\nUnknown command!")
 
 
 blurb()
 
 print("Please enter a command: ")
 while True:
-    KEY_WIDTH = TERMINAL_WIDTH * 0.10
-    VALUE_WIDTH = TERMINAL_WIDTH * 0.80
     user_input = list(input("|> ").split())
     data = load_data(SAVED_DATA)
-
     if len(user_input) <= 2:
         main(user_input)
     elif len(user_input) > 2:
         print("Too many parameters entered!")
-
