@@ -105,7 +105,7 @@ def save_validation(_key):
         print(f"Key '{key}' already exists; overwrite it?")
         confirmation = input("Y/N |> ")
 
-        if confirmation.casefold() == "y":
+        if confirmation.lower() == "y":
             print(f"Key: '{key}' will be overwritten...")
             return key
         else:
@@ -204,7 +204,7 @@ def wipe():
     print("Are you sure you like to clear all stored values?")
     confirmation = input("Y/N |> ")
 
-    if confirmation.casefold() == "y":
+    if confirmation.lower() == "y":
         print("Clearing stored items...")
         data.clear()
         save_data(SAVED_DATA, data)
@@ -217,45 +217,47 @@ def quit_cleanup():
     print("Would you like to clear stored values before exiting?")
     confirmation = input("Y/N |> ")
 
-    if confirmation.casefold() == "y":
+    if confirmation.lower() == "y":
         print(f"Deleting {SAVED_DATA}...")
         os.remove(SAVED_DATA)
         print(f"Values stored in {SAVED_DATA} deleted successfully!")
     else:
         print("Retaining stored values...")
 
+    print("\nQuitting application...")
+    time.sleep(1)
+    sys.exit()
+
 
 def main(_user_input: list):
+    blank_string = str()
     try:
-        command: str = _user_input[0].casefold()
+        user_command: str = _user_input[0].lower()
     except IndexError:
-        command = str()
+        user_command = blank_string
     try:
-        parameter: str = _user_input[1]
+        user_parameter: str = _user_input[1]
     except IndexError:
-        parameter = str()
+        user_parameter = blank_string
 
-    if any(command in value for value in ALL_COMMANDS.values()):
-        command: list = [key for key, value in ALL_COMMANDS.items() if command in value]
-        command: str = command[0]
-        if command == "save":
-            save(parameter)
-        elif command == "load":
-            load(parameter)
-        elif command == "view":
+    if any(user_command in available_command for available_command in ALL_COMMANDS.values()):
+        user_command: list = [key for key, value in ALL_COMMANDS.items() if user_command in value]
+        user_command: str = user_command[0]
+        if user_command == "save":
+            save(user_parameter)
+        elif user_command == "load":
+            load(user_parameter)
+        elif user_command == "view":
             view_all()
-        elif command == "delete":
-            delete(parameter)
-        elif command == "wipe":
+        elif user_command == "delete":
+            delete(user_parameter)
+        elif user_command == "wipe":
             wipe()
-        elif command == "quit":
+        elif user_command == "quit":
             quit_cleanup()
-            print("\nQuitting application...")
-            time.sleep(1)
-            sys.exit()
-        elif command == "help":
+        elif user_command == "help":
             help_text()
-    elif command == str():
+    elif user_command == str():
         print("\nPlease provide a command, or type 'help' or '?' for a list of commands.")
     else:
         print("\nUnknown command!")
