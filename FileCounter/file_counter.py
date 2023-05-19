@@ -5,8 +5,6 @@ import webbrowser
 from pathlib import Path
 from prettytable import PrettyTable, SINGLE_BORDER
 
-filename = Path(r"W:\!Applications").resolve()
-
 
 def request_file_path():
     _user_filepath = input("Provide a directory: ")
