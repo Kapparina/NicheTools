@@ -8,7 +8,7 @@ class Dict(dict):
             if _value == value:
                 return _key
         else:
-            return f"No key at {value}!"
+            return False
 
     def fuzz_keys(self, value: str, scope: int = 3):
         """Uses RapidFuzz to perform a fuzzy search on keys."""
