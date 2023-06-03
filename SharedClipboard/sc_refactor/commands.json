@@ -1,0 +1,9 @@
+{
+  "help": ["help", "?"],
+  "save": ["save", "s"],
+  "load": ["load", "l"],
+  "view": ["all", "a"],
+  "delete": ["delete", "del", "d"],
+  "wipe": ["wipe", "w", "clear"],
+  "quit": ["quit", "q"]
+}
