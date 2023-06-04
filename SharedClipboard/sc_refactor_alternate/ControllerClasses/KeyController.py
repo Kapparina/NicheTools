@@ -3,7 +3,24 @@ import pyperclip as pc
 
 class Key:
     def __init__(self, data: dict):
-        self.data = data
+        self._data = data
+
+# ------------ Properties: ------------
+
+    @property
+    def data(self) -> dict:
+        """The data property."""
+        return self._data
+
+    @data.setter
+    def data(self, new_data: dict) -> None:
+        self._data = new_data
+
+    @data.deleter
+    def data(self) -> None:
+        del self._data
+
+# ------------ Methods: ------------
 
     def key_check(self, key: str) -> bool:
         if key in self.data.keys():

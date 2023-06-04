@@ -1,10 +1,32 @@
 class Help:
-    def __init__(self, blurb_text: str, help_text: str):
-        self.blurb_text = blurb_text
-        self.help_text = help_text
+    def __init__(self, blurb_text: str = str(), help_text: str = str()):
+        self._blurb = blurb_text
+        self._help = help_text
 
-    def read_blurb(self) -> str:
-        return self.blurb_text
+# ------------ Properties: ------------
 
-    def read_help(self) -> str:
-        return self.help_text
+    @property
+    def blurb(self) -> str:
+        """The blurb property."""
+        return self._blurb
+
+    @blurb.setter
+    def blurb(self, text: str) -> None:
+        self._blurb = text
+
+    @blurb.deleter
+    def blurb(self) -> None:
+        del self._blurb
+
+    @property
+    def help(self) -> str:
+        """The help property."""
+        return self._help
+
+    @help.setter
+    def help(self, text: str) -> None:
+        self._help = text
+
+    @help.deleter
+    def help(self) -> None:
+        del self._help
