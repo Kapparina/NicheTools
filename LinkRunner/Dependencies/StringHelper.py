@@ -9,3 +9,10 @@ def remove_chars(user_string: str, value: str) -> str:
         string=rf"{user_string}",
         flags=regex.VERBOSE)
     )
+
+
+def part_filter(user_string: str, keep_parts: int = 2) -> list:
+    if len(user_string.split()) > 1:
+        return user_string.split()[0:0 + keep_parts]
+    else:
+        return [user_string, None]

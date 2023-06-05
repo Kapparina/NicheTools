@@ -6,41 +6,48 @@ from LinkRunner.CustomClasses import Dict
 
 def connect(machines: dict | Dict, target: str) -> bool:
     """Connects to a specified virtual machine."""
-    _machines: dict = machines
-    print(f"Opening {target}...")
-    webbrowser.open(_machines[target])
+    print(f"\nOpening {target}...\n")
+    webbrowser.open(machines[target])
     return True
 
 
-def search(machines: dict | Dict) -> bool | str:
+def search(machines: dict | Dict, target=None) -> bool | str:
     """Performs a fuzzy search on a list of virtual machines."""
-    print("\nWhich machine are you searching for?\n")
-    search_query: str = input("Machine Name: ").upper()
-    search_results: list[tuple] = machines.fuzz_keys(search_query)
-    for index, result in enumerate(search_results):
-        try:
-            current_result: tuple = result
-            next_result: tuple = search_results[index + 1]
-            if search_results[0][1] == next_result[1]:
-                print(f"\nBe more specific!\n"
-                      f"Did you mean {search_results[0][0]}, or maybe {next_result[0]}?")
-                return False
-            else:
-                print(f"Selected VM: {current_result[0]}")
-                return current_result[0]
-        except IndexError:
-            pass
+    if target is None:
+        search_query: str = input("Machine Name: ").upper()
+    else:
+        search_query: str = target.upper()
+    if len(search_query) > 0:
+        search_results: list[tuple] = machines.fuzz_keys(search_query)
+        for index, result in enumerate(search_results):
+            try:
+                current_result: tuple = result
+                next_result: tuple = search_results[index + 1]
+                if search_results[0][1] == next_result[1]:
+                    print(f"\nBe more specific!\n"
+                          f"Did you mean {search_results[0][0]}, or maybe {next_result[0]}?")
+                    return False
+                else:
+                    print(f"Selected VM: {current_result[0]}")
+                    return current_result[0]
+            except IndexError:
+                pass
+    else:
+        print("Moving on...\n")
+        pass
 
 
-def validate(search_result: bool | tuple) -> bool:
+def validate(search_result: bool | tuple) -> bool | None:
     """Validates the outcome of a VMHelper search."""
     if search_result is False:
         return False
+    elif search_result is None:
+        return None
     else:
         return True
 
 
-def view(machines: dict | Dict, engine: str = "prettytable") -> PrettyTable | pd.DataFrame:
+def view(machines: dict | Dict, engine: str = "prettytable", target=None) -> PrettyTable | pd.DataFrame:
     """Prints a pandas DataFrame with tailored data - in this case, virtual machines."""
     if engine == "pandas":
         vm_df: pd.DataFrame = pd.DataFrame.from_dict({"VM Names": [k for k in machines.keys()],
@@ -61,12 +68,16 @@ def view(machines: dict | Dict, engine: str = "prettytable") -> PrettyTable | pd
         raise ValueError(f"'{engine}' is not a valid engine type!")
 
 
-def search_connect(machines: dict | Dict) -> bool:
+def search_connect(machines: dict | Dict, target=None) -> bool | None:
     """Performs a VMHelper search and validates the result - suitable for search & connect loops."""
     _machines: dict = machines
-    result: bool | str = search(machines=_machines)
-    if validate(result) is False:
+    _target: None | str = target
+    result: bool | str = search(machines=_machines, target=_target)
+    validated_result = validate(result)
+    if validated_result is False:
         return False
-    else:
+    elif validated_result is True:
         connect(machines=_machines, target=result)
+        return True
+    elif validated_result is None:
         return True
