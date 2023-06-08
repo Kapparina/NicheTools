@@ -1,6 +1,7 @@
 import webbrowser
 import pandas as pd
 from prettytable import PrettyTable, SINGLE_BORDER
+from collections import namedtuple
 from LinkRunner.CustomClasses import Dict
 
 
@@ -14,24 +15,19 @@ def connect(machines: dict | Dict, target: str) -> bool:
 def search(machines: dict | Dict, target=None) -> bool | str:
     """Performs a fuzzy search on a list of virtual machines."""
     if target is None:
+        print("Which machine are you searching for? (enter nothing to skip)")
         search_query: str = input("Machine Name: ").upper()
     else:
         search_query: str = target.upper()
     if len(search_query) > 0:
-        search_results: list[tuple] = machines.fuzz_keys(search_query)
-        for index, result in enumerate(search_results):
-            try:
-                current_result: tuple = result
-                next_result: tuple = search_results[index + 1]
-                if search_results[0][1] == next_result[1]:
-                    print(f"\nBe more specific!\n"
-                          f"Did you mean {search_results[0][0]}, or maybe {next_result[0]}?")
-                    return False
-                else:
-                    print(f"Selected VM: {current_result[0]}")
-                    return current_result[0]
-            except IndexError:
-                pass
+        search_results: list[namedtuple] = machines.fuzz_keys(search_query)
+        if len(search_results) > 1 and search_results[0].likeness == search_results[1].likeness:
+            print(f"\nBe more specific!\n"
+                  f"Did you mean {search_results[0].name}, or maybe {search_results[1].name}?\n")
+            return False
+        else:
+            print(f"Selected VM: {search_results[0].name}")
+            return search_results[0].name
     else:
         print("Moving on...\n")
         pass

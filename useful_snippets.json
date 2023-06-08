@@ -1,0 +1,4 @@
+{
+  "Replace pd/np NaN with None": "<df>.replace({pd.NaT: None}).replace({'NaT': None}).replace({np.NaN: None}).replace({\"nan\": None})",
+  "Make each pd df row into an object": "list(<Class>(*row) for row in <df>.values)"
+}

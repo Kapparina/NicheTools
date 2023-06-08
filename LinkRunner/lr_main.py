@@ -20,7 +20,6 @@ def view(virtual_machines: dict, target=None) -> bool:
 def connect(virtual_machines: dict, _target=None) -> bool:
     """VMHelper's search_connect() function wrapped in a while loop."""
     print("\n/* Initiating remote connection routine...")
-    print("Which machine are you searching for? (enter nothing to skip)")
     connection_attempt: bool = False
     while connection_attempt is False:
         connection_attempt = VMHelper.search_connect(machines=virtual_machines, target=_target)
@@ -33,7 +32,7 @@ def connect(virtual_machines: dict, _target=None) -> bool:
 def startup() -> Dict:
     """Function runs on startup; retrieves, cleans and returns necessary data."""
     print("/* Welcome to LinkRunner 2049 - Fetching links...")
-    hyperlinks = DataHelper.get_data(url=url)
+    hyperlinks = DataHelper.retrieve_links(url=url)
     hyperlinks_clean_keys = DictHelper.dict_cleanup(data=hyperlinks,
                                                     target=r"LG | VB")
     offensive_values: list = [v for v in hyperlinks_clean_keys.values() if not v.startswith(vital_prefix)]
