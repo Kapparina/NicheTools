@@ -1,11 +1,11 @@
 import pandas as pd
 from pathlib import Path
-from LinkRunner.CustomClasses import URL, Soup
+from LinkRunner.CustomClasses import URL, Soup, VirtualMachine
 
 
-def create_dataframe(_cols: dict[str, list]) -> pd.DataFrame:
-    """Takes a dictionary (or dict-like) parameter and uses it to return a pandas DataFrame."""
-    return pd.DataFrame.from_dict(_cols)
+# def create_dataframe(_cols: dict[str, list]) -> pd.DataFrame:
+#     """Takes a dictionary (or dict-like) parameter and uses it to return a pandas DataFrame."""
+#     return pd.DataFrame.from_dict(_cols)
 
 
 def retrieve_links(url: str) -> dict:
@@ -13,6 +13,12 @@ def retrieve_links(url: str) -> dict:
     converted_url: Path = URL(url).convert_to_filepath()
     soup: Soup = make_soup(converted_url)
     return dict(soup.get_links())
+
+
+def retrieve_table(url: str) -> pd.DataFrame:
+    """Returns a pandas DataFrame using the first table located at a given URL."""
+    converted_url: Path = URL(url).convert_to_filepath()
+    return pd.read_html(converted_url)[0]
 
 
 def make_soup(url: str | Path) -> Soup:

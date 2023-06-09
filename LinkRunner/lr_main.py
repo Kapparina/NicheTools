@@ -11,7 +11,7 @@ def view(virtual_machines: dict, target=None) -> bool:
     """VMHelper.view() prints the virtual_machines parameter in either a PrettyTable or pandas DataFrame."""
     if target is None:
         print("/* Behold: Tabulated data!\n")
-        VMHelper.view(machines=virtual_machines, engine="prettytable")
+        VMHelper.tabulate_dict(machines=virtual_machines, engine="prettytable")
     else:
         print("/* I cannot yet view specific targets!\n")
     return True

@@ -43,7 +43,7 @@ def validate(search_result: bool | tuple) -> bool | None:
         return True
 
 
-def view(machines: dict | Dict, engine: str = "prettytable", target=None) -> PrettyTable | pd.DataFrame:
+def tabulate_dict(machines: dict | Dict, engine: str = "prettytable", target=None) -> PrettyTable | pd.DataFrame:
     """Prints a pandas DataFrame with tailored data - in this case, virtual machines."""
     if engine == "pandas":
         vm_df: pd.DataFrame = pd.DataFrame.from_dict({"VM Names": [k for k in machines.keys()],
