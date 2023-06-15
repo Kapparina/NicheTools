@@ -1,0 +1,11 @@
+pandas~=1.5.3
+pyperclip==1.8.2
+tabulate==0.9.0
+
+prettytable~=3.7.0
+regex~=2023.5.5
+bs4~=0.0.1
+beautifulsoup4~=4.12.2
+rapidfuzz~=3.0.0
+pyinstaller~=5.10.1
+rich~=13.4.1
