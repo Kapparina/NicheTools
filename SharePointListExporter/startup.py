@@ -1,6 +1,6 @@
 import shutil
-import time
 from pathlib import Path
+import json
 
 import SharePointListExporter.Dependencies.FileOperations as Fops
 
@@ -12,8 +12,17 @@ def archive_old(working_directory: str,
 
     for item in Path(working_directory).iterdir():
         if item.is_file():
-            shutil.move(src=item,
-                        dst=Path(archive_directory))
+            shutil.move(
+                src=item,
+                dst=Path(archive_directory))
             item_count += 1
 
     return item_count
+
+
+def load_json(file: str | Path) -> dict:
+    with open(file=file,
+              mode="r") as f:
+        data: dict = json.load(f)
+
+    return data

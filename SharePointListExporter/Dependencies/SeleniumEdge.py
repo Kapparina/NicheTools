@@ -42,23 +42,28 @@ def create_options(*args) -> EdgeOptions:
 def create_driver(options: EdgeOptions,
                   service: EdgeService) -> EdgeDriver:
     """Creates a Selenium-based Edge WebDriver."""
-    driver: EdgeDriver = EdgeDriver(options=options,
-                                    service=service)
+    driver: EdgeDriver = EdgeDriver(
+        options=options,
+        service=service)
 
     return driver
 
 
 def find_element_name(driver: EdgeDriver,
                       element: str) -> WebElement:
-    found_element: WebElement = driver.find_element(by=By.NAME,
-                                                    value=element)
+    found_element: WebElement = driver.find_element(
+        by=By.NAME,
+        value=element)
 
     return found_element
 
 
 def wait_element_clickable(driver: EdgeDriver,
                            element_name: str) -> None:
-    WebDriverWait(driver=driver,
-                  timeout=10
-                  ).until(ec.element_to_be_clickable(mark=(By.NAME,
-                                                           element_name)))
+    WebDriverWait(
+        driver=driver,
+        timeout=10).until(
+            ec.element_to_be_clickable(
+                mark=(
+                    By.NAME,
+                    element_name)))

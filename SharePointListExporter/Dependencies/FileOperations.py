@@ -40,10 +40,13 @@ def count_recent_csv(directory: str) -> namedtuple:
                        in glob.glob(pathname=f"{directory}/*.csv")
                        if modified_recently(file)]
 
-    ResultCount: namedtuple = namedtuple(typename="FileCount",
-                                         field_names=["total", "files"])
+    ResultCount: namedtuple = namedtuple(
+        typename="FileCount",
+        field_names=["total", "files"])
 
-    return ResultCount(total=len(csv_files), files=csv_files)
+    return ResultCount(
+        total=len(csv_files),
+        files=csv_files)
 
 
 def get_latest_csv(directory: str) -> None | str | bool:
