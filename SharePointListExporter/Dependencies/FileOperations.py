@@ -23,14 +23,15 @@ def rename_timestamp(file: str) -> Path:
     return renamed_file
 
 
-def create_directory(path: str) -> Path:
+def create_directory(*paths: str) -> Path:
     """Creates a chosen directory."""
-    directory: Path = Path(path)
+    for path in paths:
+        directory: Path = Path(path)
 
-    if not directory.is_dir():
-        directory.mkdir(parents=True)
+        if not directory.is_dir():
+            directory.mkdir(parents=True)
 
-    return directory
+        return directory
 
 
 def count_recent_csv(directory: str) -> namedtuple:

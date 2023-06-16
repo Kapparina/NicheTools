@@ -2,7 +2,7 @@
 import os
 
 # External library packages:
-from selenium import webdriver as wd
+from selenium.webdriver.edge.webdriver import WebDriver as EdgeDriver
 from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.common.by import By
@@ -10,15 +10,16 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 # Project-specific library packages:
-from .FileOperations import create_directory
+from SharePointListExporter.Dependencies.FileOperations import create_directory
 
 
 def create_service(root_directory: str) -> EdgeService:
     """Installs an Edge WebDriver executable file and returns a Service to be used by an Edge WebDriver."""
-    root: str = str(create_directory(path=root_directory))
+    root: str = str(create_directory(root_directory))
 
     os.environ['WDM_PROGRESS_BAR']: str = str(0)  # Disabling the progress bar during driver installation.
 
@@ -39,9 +40,25 @@ def create_options(*args) -> EdgeOptions:
 
 
 def create_driver(options: EdgeOptions,
-                  service: EdgeService) -> wd.Edge:
+                  service: EdgeService) -> EdgeDriver:
     """Creates a Selenium-based Edge WebDriver."""
-    driver: wd.Edge = wd.Edge(options=options,
-                              service=service)
+    driver: EdgeDriver = EdgeDriver(options=options,
+                                    service=service)
 
     return driver
+
+
+def find_element_name(driver: EdgeDriver,
+                      element: str) -> WebElement:
+    found_element: WebElement = driver.find_element(by=By.NAME,
+                                                    value=element)
+
+    return found_element
+
+
+def wait_element_clickable(driver: EdgeDriver,
+                           element_name: str) -> None:
+    WebDriverWait(driver=driver,
+                  timeout=10
+                  ).until(ec.element_to_be_clickable(mark=(By.NAME,
+                                                           element_name)))
