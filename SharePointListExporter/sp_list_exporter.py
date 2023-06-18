@@ -1,95 +1,77 @@
-# Standard library packages:
+# -------------- Standard library packages --------------
 import os
 import shutil
 import time
 from pathlib import Path
-import psutil
+from datetime import datetime
+import json
 
-# Project-specific/local library packages:
+# -------------- Project-specific/local library packages --------------
 import SharePointListExporter.startup as startup
 import SharePointListExporter.Dependencies.FileOperations as Fops
 import SharePointListExporter.Dependencies.SeleniumEdge as Selene
 import SharePointListExporter.Dependencies.DataFrameCheck as DFCheck
 
-# Constants:
-DL_DIR: str = "C:/temp/SeleneDownloads"
-ARCHIVE_DIR: str = f"{DL_DIR}/Archive"
-DRIVER_DIR: str = "C:/temp/SeleneEdge"
-USER_DOWNLOADS: Path = Path(f"{os.getenv('USERPROFILE')}", "Downloads")
+# -------------- Constants --------------
+ALL_DIRS: dict = startup.load_json(file=Path("./Data/working_directories.json").resolve())  # All directories.
+ARCHIVE_DIR: Path = Path(ALL_DIRS["archive_directory"])  # Archive directory.
+DRIVER_DIR: Path = Path(ALL_DIRS["driver_directory"])  # Driver directory.
+NAME_TIMESTAMP: str = datetime.now().strftime("%Y%m%d_%H%M%S")  # Filename-formatted timestamp.
+USER_DOWNLOADS: Path = Path(Fops.get_downloads_folder())  # Current user's 'Downloads' directory.
+WORKING_DIR: Path = Path(ALL_DIRS["working_directory"])  # Working directory.
 
-# Variables:
-sp_lists: dict = startup.load_json(Path("./Data/lists.json").resolve())
-
-
-def move_from_downloads(file: Path) -> Path:
-    """Moves a file from a directory to this application's working directory."""
-    shutil.move(
-        src=file,
-        dst=Path(DL_DIR))
-    moved_file: Path = Path(DL_DIR, file.name)
-
-    return moved_file
-
-
-def latest_csv() -> None | str | bool:
-    return Fops.get_latest_csv(directory=str(USER_DOWNLOADS))
+# -------------- Variables --------------
+sp_lists: dict = startup.load_json(file=Path("./Data/test_lists.json").resolve())  # JSON file with SP list URLs.
 
 
 # -------------- Startup Function --------------
-def initialize() -> None:
+def initialize() -> tuple[Fops.FileOperator, Selene.Browser]:
     """Prepares directories for later functions."""
-    Fops.create_directory(DL_DIR, ARCHIVE_DIR, DRIVER_DIR)
+    file_helper: Fops.FileOperator = Fops.FileOperator(
+        archive=ARCHIVE_DIR,
+        working_directory=WORKING_DIR)
 
-    startup.archive_old(
-        working_directory=DL_DIR,
-        archive_directory=ARCHIVE_DIR)  # Archive old files in this tool's working directory.
+    startup.create_directories(
+        file_manager=file_helper,
+        directories=ALL_DIRS)
 
-    while latest_csv() is not None:
-        time.sleep(5)
+    startup.archive_all(file_manager=file_helper)
+
+    browser: Selene.Browser = startup.browser_startup(
+        driver_root=DRIVER_DIR,
+        download_path=WORKING_DIR)
+
+    return file_helper, browser
 
 
 # -------------- Browser Operations --------------
-def browser_actions(url: str) -> None:
+def browser_actions(browser: Selene.Browser,
+                    url: str,
+                    file_manager: Fops.FileOperator) -> bool:
     """Prepares and performs actions using a Selenium-based Edge WebDriver."""
-    browser_service: Selene.EdgeService = Selene.create_service(root_directory=DRIVER_DIR)
-
-    browser_options: Selene.EdgeOptions = Selene.create_options(
-        f"user-data-dir={os.getenv('TEMP')}",
-        "headless=new",
-        "disable-gpu",
-        "window-size=1920,1080")
-
-    browser: Selene.EdgeDriver = Selene.create_driver(
-        options=browser_options,
-        service=browser_service)
-
     # TODO: List of downloaded files.
     # TODO: While loop using list of downloaded files, crosschecking old files.
 
-    browser.get(url=url)
-    browser.get_screenshot_as_file(Path(DRIVER_DIR, "screenshot.png"))
+    _browser: Selene.Browser = browser
+    _browser.get_url(url=url)
+    file_helper: Fops.FileOperator = file_manager
 
-    Selene.wait_element_clickable(
-        driver=browser,
-        element_name="Export")
+    time.sleep(3)
 
-    Selene.find_element_name(
-        driver=browser,
-        element="Export").click()
+    _browser.take_screenshot(Path(
+        DRIVER_DIR,
+        f"screenshot_{NAME_TIMESTAMP}.png"))
 
-    Selene.wait_element_clickable(
-        driver=browser,
-        element_name="Export to CSV")
+    _browser.switch_last_frame()
 
-    Selene.find_element_name(
-        driver=browser,
-        element="Export to CSV").click()
+    _browser.click_element_xpaths(
+        "//span[contains(text(), 'Export')]",
+        "//span[contains(text(), 'Export to CSV')]")
 
     # TODO: Delete downloaded files until only the most recent is the sole file created in last minute?
-
     sleep_counter: int = 0
 
-    while latest_csv() is None:
+    while file_helper.count_recently_created(directory=WORKING_DIR) < 1:
         time.sleep(1)
         sleep_counter += 1
 
@@ -101,20 +83,38 @@ def browser_actions(url: str) -> None:
 
 # -------------- Main Function --------------
 def main() -> None:
-    for key, value in sp_lists.items():
-        initialize()
-        browser_actions(url=value)
+    file_helper, browser = initialize()
+    list_summaries: dict = {}
 
-        if type(file := latest_csv()) is not str:
-            time.sleep(10)
+    while True:
+        try:
+            for list_name, list_url in sp_lists.items():
+                browser_actions(
+                    browser=browser,
+                    url=list_url,
+                    file_manager=file_helper)
 
-            # TODO: See TODO in browser_actions().
+            break
 
-        else:
-            timestamped_file: Path = Fops.rename_timestamp(file=file)
-            working_file: Path = move_from_downloads(file=timestamped_file)
-            row_count: int = DFCheck.csv_row_count(file=working_file)
-            print(f"{key.upper()} item count: {row_count}")
+        except Selene.TimeoutException:
+            print("Whoops, I've failed! Trying again...")
+            browser.restart()
+            time.sleep(3)
+
+    for file in WORKING_DIR.iterdir():
+        if file.is_file():
+            timestamped_file: Path = file_helper.add_timestamp(file=file)
+            row_count: int = DFCheck.csv_row_count(file=timestamped_file)
+            print(f"'{list_name}' item count: {row_count}")
+            list_summaries[list_name] = row_count
+            file_helper.archive_working_directory()
+
+    with open(
+            file=f"{WORKING_DIR}/Summary_{NAME_TIMESTAMP}.json",
+            mode="w") as summary_json:
+
+        json.dump(obj=list_summaries,
+                  fp=summary_json)
 
 
 if __name__ == '__main__':

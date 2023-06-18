@@ -1,5 +1,6 @@
 # Built-in library packages:
 import os
+from typing import Any
 
 # External library packages:
 from selenium.webdriver.edge.webdriver import WebDriver as EdgeDriver
@@ -12,58 +13,88 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
-
-# Project-specific library packages:
-from SharePointListExporter.Dependencies.FileOperations import create_directory
+from selenium.common.exceptions import TimeoutException
 
 
-def create_service(root_directory: str) -> EdgeService:
-    """Installs an Edge WebDriver executable file and returns a Service to be used by an Edge WebDriver."""
-    root: str = str(create_directory(root_directory))
+class Browser:
+    Service: EdgeService
+    Options: EdgeOptions
+    Driver: EdgeDriver
+    Wait: WebDriverWait
 
-    os.environ['WDM_PROGRESS_BAR']: str = str(0)  # Disabling the progress bar during driver installation.
+    def __init__(self):
+        self.Service = EdgeService()
+        self.Options = EdgeOptions()
+        self.Options.add_argument("user-agent=Mozilla/5.0")
 
-    driver_path: str = EdgeChromiumDriverManager(path=root).install()
-    service: EdgeService = EdgeService(executable_path=driver_path)
+    def add_service(self, directory: str) -> None:
+        os.environ["WDM_PROGRESS_BAR"]: str = str(0)
+        service_path: str = EdgeChromiumDriverManager(path=directory).install()
+        self.Service = EdgeService(executable_path=service_path)
 
-    return service
+    def add_options(self, *options) -> None:
+        for option in options:
+            self.Options.add_argument(argument=option)
+
+    def add_driver(self) -> None:
+        self.Driver = EdgeDriver(
+            options=self.Options,
+            service=self.Service)
+
+        self.Wait = WebDriverWait(
+            driver=self.Driver,
+            timeout=10)
+
+        self.Driver.implicitly_wait(time_to_wait=2)
+
+    def _await_element_xpath(self, element: str) -> Any:
+        return self.Wait.until(
+            ec.presence_of_element_located((
+                By.XPATH,
+                element)))
+
+    def _click_element_name(self, element: str) -> None:
+        self.Wait.until(
+            ec.element_to_be_clickable(mark=(
+                By.NAME,
+                element))).click()
+
+    def _click_element_xpath(self, element: str) -> None:
+        self.Wait.until(
+            ec.element_to_be_clickable(mark=(
+                By.XPATH,
+                element))).click()
+
+    def _find_frame_xpath(self, frame: str) -> WebElement:
+        return self.Driver.find_element(
+            by=By.XPATH,
+            value=frame)
+
+    def click_element_names(self, *elements) -> None:
+        for element in elements:
+            self._click_element_name(element=element)
+
+    def click_element_xpaths(self, *elements) -> None:
+        for element in elements:
+            self._click_element_xpath(element=element)
+
+    def get_url(self, url: str) -> None:
+        self.Driver.get(url=url)
+
+    def switch_frame(self, frame: str) -> None:
+        found_frame: Any = self._await_element_xpath(element=frame)
+        self.Wait.until(
+            ec.frame_to_be_available_and_switch_to_it(found_frame))
+
+    def switch_last_frame(self) -> None:
+        last_frame: Any = self._await_element_xpath(element="(//iframe)[last()]")
+        self.Wait.until(
+            ec.frame_to_be_available_and_switch_to_it(last_frame))
+
+    def restart(self) -> None:
+        self.Driver.close()
+        self.add_driver()
 
 
-def create_options(*args) -> EdgeOptions:
-    """Creates an instance of EdgeOptions for use by an Edge WebDriver."""
-    options: EdgeOptions = EdgeOptions()
-
-    for arg in args:
-        options.add_argument(argument=arg)
-
-    return options
-
-
-def create_driver(options: EdgeOptions,
-                  service: EdgeService) -> EdgeDriver:
-    """Creates a Selenium-based Edge WebDriver."""
-    driver: EdgeDriver = EdgeDriver(
-        options=options,
-        service=service)
-
-    return driver
-
-
-def find_element_name(driver: EdgeDriver,
-                      element: str) -> WebElement:
-    found_element: WebElement = driver.find_element(
-        by=By.NAME,
-        value=element)
-
-    return found_element
-
-
-def wait_element_clickable(driver: EdgeDriver,
-                           element_name: str) -> None:
-    WebDriverWait(
-        driver=driver,
-        timeout=10).until(
-            ec.element_to_be_clickable(
-                mark=(
-                    By.NAME,
-                    element_name)))
+    def take_screenshot(self, name: Any) -> None:
+        self.Driver.get_screenshot_as_file(filename=name)

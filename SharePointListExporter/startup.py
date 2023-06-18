@@ -1,23 +1,22 @@
-import shutil
-from pathlib import Path
+import os
 import json
+from pathlib import Path
 
-import SharePointListExporter.Dependencies.FileOperations as Fops
+from SharePointListExporter.Dependencies import FileOperator
+from SharePointListExporter.Dependencies import SeleniumEdge as Selene
 
 
-def archive_old(working_directory: str,
-                archive_directory: str) -> int:
-    """Moves files currently in this application's working directory to an archive directory."""
-    item_count: int = 0
+def archive_all(file_manager: FileOperator) -> int:
+    archive_count: int = file_manager.archive_working_directory()
 
-    for item in Path(working_directory).iterdir():
-        if item.is_file():
-            shutil.move(
-                src=item,
-                dst=Path(archive_directory))
-            item_count += 1
+    return archive_count
 
-    return item_count
+
+def create_directories(file_manager: FileOperator,
+                       directories: dict) -> None:
+
+    for key, value in directories.items():
+        file_manager.create_directories(value)
 
 
 def load_json(file: str | Path) -> dict:
@@ -26,3 +25,30 @@ def load_json(file: str | Path) -> dict:
         data: dict = json.load(f)
 
     return data
+
+
+def browser_startup(driver_root: str | Path,
+                    download_path: str | Path) -> Selene.Browser:
+    _driver_root: str = str(driver_root)
+    _download_path: str = str(download_path)
+
+    browser: Selene.Browser = Selene.Browser()
+    browser.add_service(directory=_driver_root)
+
+    browser.add_options(
+        f"user-data-dir={os.getenv('TEMP')}",)
+        # "headless=new",
+        # "disable-gpu",
+        # "window-size=1920,1080")
+
+    browser.Options.add_experimental_option(
+        "prefs",
+        {
+            "download.default_directory": _download_path,
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True
+        })
+
+    browser.add_driver()
+
+    return browser
