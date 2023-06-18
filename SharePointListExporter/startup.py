@@ -29,6 +29,7 @@ def load_json(file: str | Path) -> dict:
 
 def browser_startup(driver_root: str | Path,
                     download_path: str | Path) -> Selene.Browser:
+
     _driver_root: str = str(driver_root)
     _download_path: str = str(download_path)
 
@@ -36,10 +37,10 @@ def browser_startup(driver_root: str | Path,
     browser.add_service(directory=_driver_root)
 
     browser.add_options(
-        f"user-data-dir={os.getenv('TEMP')}",)
-        # "headless=new",
-        # "disable-gpu",
-        # "window-size=1920,1080")
+        f"user-data-dir={os.getenv('TEMP')}",
+        "headless=new",
+        "disable-gpu",
+        "window-size=1920,1080")
 
     browser.Options.add_experimental_option(
         "prefs",

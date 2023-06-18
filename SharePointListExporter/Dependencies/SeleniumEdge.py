@@ -9,8 +9,6 @@ from selenium.webdriver.edge.options import Options as EdgeOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as ec
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import Select
 from selenium.webdriver.remote.webelement import WebElement
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 from selenium.common.exceptions import TimeoutException
@@ -94,7 +92,6 @@ class Browser:
     def restart(self) -> None:
         self.Driver.close()
         self.add_driver()
-
 
     def take_screenshot(self, name: Any) -> None:
         self.Driver.get_screenshot_as_file(filename=name)

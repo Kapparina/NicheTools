@@ -1,6 +1,4 @@
 # -------------- Standard library packages --------------
-import os
-import shutil
 import time
 from pathlib import Path
 from datetime import datetime
@@ -47,26 +45,42 @@ def initialize() -> tuple[Fops.FileOperator, Selene.Browser]:
 # -------------- Browser Operations --------------
 def browser_actions(browser: Selene.Browser,
                     url: str,
-                    file_manager: Fops.FileOperator) -> bool:
+                    file_manager: Fops.FileOperator) -> tuple:
+    
     """Prepares and performs actions using a Selenium-based Edge WebDriver."""
     # TODO: List of downloaded files.
     # TODO: While loop using list of downloaded files, crosschecking old files.
-
     _browser: Selene.Browser = browser
-    _browser.get_url(url=url)
     file_helper: Fops.FileOperator = file_manager
+    attempt_counter: int = 0
+    click_attempt: bool = False
 
-    time.sleep(3)
+    while True:
+        try:
+            _browser.get_url(url=url)
+            time.sleep(3)
 
-    _browser.take_screenshot(Path(
-        DRIVER_DIR,
-        f"screenshot_{NAME_TIMESTAMP}.png"))
+            _browser.take_screenshot(Path(
+                DRIVER_DIR,
+                f"screenshot_{NAME_TIMESTAMP}.png"))
 
-    _browser.switch_last_frame()
+            _browser.switch_last_frame()
 
-    _browser.click_element_xpaths(
-        "//span[contains(text(), 'Export')]",
-        "//span[contains(text(), 'Export to CSV')]")
+            _browser.click_element_xpaths(
+                "//span[contains(text(), 'Export')]",
+                "//span[contains(text(), 'Export to CSV')]")
+
+            click_attempt = True
+            break
+
+        except Selene.TimeoutException:
+            browser.restart()
+            time.sleep(3)
+
+            if attempt_counter == 5:
+                break
+            else:
+                attempt_counter += 1
 
     # TODO: Delete downloaded files until only the most recent is the sole file created in last minute?
     sleep_counter: int = 0
@@ -80,34 +94,30 @@ def browser_actions(browser: Selene.Browser,
         else:
             continue
 
+    return click_attempt, attempt_counter
+
 
 # -------------- Main Function --------------
 def main() -> None:
     file_helper, browser = initialize()
     list_summaries: dict = {}
 
-    while True:
-        try:
-            for list_name, list_url in sp_lists.items():
-                browser_actions(
-                    browser=browser,
-                    url=list_url,
-                    file_manager=file_helper)
+    for list_name, list_url in sp_lists.items():
+        success_flag, attempt_count = browser_actions(
+            browser=browser,
+            url=list_url,
+            file_manager=file_helper)
 
-            break
-
-        except Selene.TimeoutException:
-            print("Whoops, I've failed! Trying again...")
-            browser.restart()
-            time.sleep(3)
-
-    for file in WORKING_DIR.iterdir():
-        if file.is_file():
-            timestamped_file: Path = file_helper.add_timestamp(file=file)
-            row_count: int = DFCheck.csv_row_count(file=timestamped_file)
-            print(f"'{list_name}' item count: {row_count}")
-            list_summaries[list_name] = row_count
-            file_helper.archive_working_directory()
+        if success_flag is False:
+            list_summaries[list_name] = f"Failed after {attempt_count}."
+        else:
+            for file in WORKING_DIR.iterdir():
+                if file.is_file():
+                    timestamped_file: Path = file_helper.add_timestamp(file=file)
+                    row_count: int = DFCheck.csv_row_count(file=timestamped_file)
+                    print(f"'{list_name}' item count: {row_count}")
+                    list_summaries[list_name] = f"{row_count} - attempt #: {attempt_count}"
+                    file_helper.archive_working_directory()
 
     with open(
             file=f"{WORKING_DIR}/Summary_{NAME_TIMESTAMP}.json",
