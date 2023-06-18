@@ -1,5 +1,0 @@
-from SharedClipboard.sc_refactor_alternate.ControllerClasses.KeyController import DictController
-from SharedClipboard.sc_refactor_alternate.ControllerClasses.DisplayController import Display
-from SharedClipboard.sc_refactor_alternate.ControllerClasses.HelpController import Help
-from SharedClipboard.sc_refactor_alternate.ControllerClasses.IndexController import Index
-from SharedClipboard.sc_refactor_alternate.ControllerClasses.JSONController import JSONController
