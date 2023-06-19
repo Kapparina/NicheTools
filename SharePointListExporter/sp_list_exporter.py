@@ -19,7 +19,7 @@ USER_DOWNLOADS: Path = Path(Fops.get_downloads_folder())  # Current user's 'Down
 WORKING_DIR: Path = Path(ALL_DIRS["working_directory"])  # Working directory.
 
 # -------------- Variables --------------
-sp_lists: dict = startup.load_json(file=Path("./Data/test_lists.json").resolve())  # JSON file with SP list URLs.
+sp_lists: dict = startup.load_json(file=Path("./Data/lists.json").resolve())  # JSON file with SP list URLs.
 
 
 # -------------- Startup Function --------------
@@ -46,7 +46,7 @@ def initialize() -> tuple[Fops.FileOperator, Selene.Browser]:
 def browser_actions(browser: Selene.Browser,
                     url: str,
                     file_manager: Fops.FileOperator) -> tuple:
-    
+
     """Prepares and performs actions using a Selenium-based Edge WebDriver."""
     # TODO: List of downloaded files.
     # TODO: While loop using list of downloaded files, crosschecking old files.
@@ -64,7 +64,7 @@ def browser_actions(browser: Selene.Browser,
                 DRIVER_DIR,
                 f"screenshot_{NAME_TIMESTAMP}.png"))
 
-            _browser.switch_last_frame()
+            # _browser.switch_last_frame()  # Uncomment this if SP has transitioned to hiding behind frames.
 
             _browser.click_element_xpaths(
                 "//span[contains(text(), 'Export')]",
@@ -123,8 +123,10 @@ def main() -> None:
             file=f"{WORKING_DIR}/Summary_{NAME_TIMESTAMP}.json",
             mode="w") as summary_json:
 
-        json.dump(obj=list_summaries,
-                  fp=summary_json)
+        json.dump(
+            obj=list_summaries,
+            fp=summary_json,
+            indent=4)
 
 
 if __name__ == '__main__':

@@ -7,6 +7,7 @@ from SharePointListExporter.Dependencies import SeleniumEdge as Selene
 
 
 def archive_all(file_manager: FileOperator) -> int:
+    """Moves files from a FileOperator's working directory to an archive directory."""
     archive_count: int = file_manager.archive_working_directory()
 
     return archive_count
@@ -15,11 +16,13 @@ def archive_all(file_manager: FileOperator) -> int:
 def create_directories(file_manager: FileOperator,
                        directories: dict) -> None:
 
+    """Creates directories using a FileOperator."""
     for key, value in directories.items():
         file_manager.create_directories(value)
 
 
 def load_json(file: str | Path) -> dict:
+    """Loads a JSON file and returns it."""
     with open(file=file,
               mode="r") as f:
         data: dict = json.load(f)
@@ -30,6 +33,7 @@ def load_json(file: str | Path) -> dict:
 def browser_startup(driver_root: str | Path,
                     download_path: str | Path) -> Selene.Browser:
 
+    """Configures and instantiates a Browser"""
     _driver_root: str = str(driver_root)
     _download_path: str = str(download_path)
 
