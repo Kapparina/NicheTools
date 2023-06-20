@@ -1,8 +1,6 @@
 import time
-import glob
 import shutil
 from pathlib import Path
-from collections import namedtuple
 from datetime import datetime
 import winreg
 from typing import Any
