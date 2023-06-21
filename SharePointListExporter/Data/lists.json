@@ -1,5 +1,8 @@
 {
-    "s290": "https://linkhub.sharepoint.com/sites/RPARC/PROD/s290/Lists/s290/AllItems.aspx?env=WebViewList",
-    "aim": "https://linkhub.sharepoint.com/sites/RPARC/PROD/AIM/Lists/AIM/All%20Items.aspx?env=WebViewList",
-    "duplicatemerge": "https://linkhub.sharepoint.com/sites/RPARC/PROD/DuplicateMerge/Lists/WorkingData/AllItems.aspx?env=WebViewList"
+    "AIM": "https://linkhub.sharepoint.com/sites/RPARC/PROD/AIM/Lists/AIM/All%20Items.aspx?env=WebViewList",
+    "ACTA": "https://linkhub.sharepoint.com/sites/RPARC/PROD/ACTA/Lists/ACTA/AllItems.aspx?env=WebViewList",
+    "Insurance Opt Outs": "https://linkhub.sharepoint.com/sites/RPARC/PROD/InsuranceOptOut/Lists/Insurance%20Opt%20Out/AllItems.aspx?env=WebViewList",
+    "Member Profiles": "https://linkhub.sharepoint.com/sites/RPARC/PROD/Member%20Profiles/Lists/Member%20Profiles/AllItems.aspx?env=WebViewList",
+    "Duplicate Merge": "https://linkhub.sharepoint.com/sites/RPARC/PROD/DuplicateMerge/Lists/WorkingData/AllItems.aspx?env=WebViewList",
+    "S290": "https://linkhub.sharepoint.com/sites/RPARC/PROD/s290/Lists/s290/AllItems.aspx?env=WebViewList"
 }

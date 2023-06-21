@@ -30,16 +30,16 @@ class FileOperator:
         self._archive = Path(directory)
 
     @property
+    def downloads(self) -> Path:
+        return self._downloads
+
+    @property
     def recent_seconds(self) -> float:
         return self._recent_seconds
 
     @recent_seconds.setter
     def recent_seconds(self, num_seconds: float) -> None:
         self._recent_seconds = num_seconds
-
-    @property
-    def downloads(self) -> Path:
-        return self._downloads
 
     @property
     def working_directory(self) -> Path:
@@ -51,6 +51,17 @@ class FileOperator:
 
 # -------------- Static Methods --------------
     @staticmethod
+    def _add_timestamp(file: str | Path) -> Path:
+        """Renames a file, appending the current date and time."""
+        _file: Path = Path(file)
+        timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        renamed_file: Path = _file.rename(
+            _file.with_stem(f"{_file.stem}_{timestamp}"))
+
+        return renamed_file
+
+    @staticmethod
     def _create_directory(to_create: str | Path) -> Path | None:
         """Creates a directory, including parent directories along the path."""
         directory: Path = Path(to_create)
@@ -60,6 +71,15 @@ class FileOperator:
             return directory
         else:
             return None
+
+    @staticmethod
+    def check_extension(file: str | Path, extension: str) -> bool:
+        _file: Path = Path(file)
+
+        if _file.suffix == extension:
+            return True
+        else:
+            return False
 
     @staticmethod
     def get_downloads_directory() -> Path:
@@ -74,13 +94,13 @@ class FileOperator:
             return downloads
 
     @staticmethod
-    def add_timestamp(file: str | Path) -> Path:
-        """Renames a file, appending the current date and time."""
+    def rename_with_timestamp(file: str | Path, new_name: str) -> Path:
+        """Renames a given file using a specified name, appending the current date and time."""
         _file: Path = Path(file)
         timestamp: str = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         renamed_file: Path = _file.rename(
-            _file.with_stem(f"{_file.stem}_{timestamp}"))
+            _file.with_stem(f"{new_name}_{timestamp}"))
 
         return renamed_file
 
@@ -113,15 +133,6 @@ class FileOperator:
 
         return recent_file_count
 
-    def recently_created(self, file: str | Path) -> bool:
-        """Checks whether a file created fits within the definition of 'recently created'."""
-        delta = time.time() - Path(file).stat().st_ctime
-
-        if delta < self.recent_seconds:
-            return True
-        else:
-            return False
-
     def create_directories(self, *dirs_to_create) -> list[Path]:
         """Creates a number of directories."""
         created_directories: list[Path] = []
@@ -131,6 +142,15 @@ class FileOperator:
             created_directories.append(new_dir)
 
         return created_directories
+
+    def recently_created(self, file: str | Path) -> bool:
+        """Checks whether a file created fits within the definition of 'recently created'."""
+        delta = time.time() - Path(file).stat().st_ctime
+
+        if delta < self.recent_seconds:
+            return True
+        else:
+            return False
 
 
 # -------------- Functions --------------

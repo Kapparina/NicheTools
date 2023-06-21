@@ -57,3 +57,12 @@ def browser_startup(driver_root: str | Path,
     browser.add_driver()
 
     return browser
+
+
+def length_check(strings: iter) -> int:
+    """Returns the length of the longest string in an iterable containing strings."""
+    big_length: int = len(max(
+        strings,
+        key=len))
+
+    return big_length
