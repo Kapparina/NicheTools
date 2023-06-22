@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 
 
+# region Functions
 def dataframe_csv(csv_file: str | Path) -> pd.DataFrame:
     """Creates a pandas DataFrame from a given CSV file."""
     df = pd.read_csv(csv_file)
@@ -22,3 +23,4 @@ def csv_row_count(file: str | Path) -> int:
     row_count: int = count_rows(dataframe=df)
 
     return row_count
+# endregion Functions

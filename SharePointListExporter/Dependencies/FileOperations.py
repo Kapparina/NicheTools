@@ -20,7 +20,7 @@ class FileOperator:
         self._recent_seconds = recent_seconds
         self._working_directory = working_directory
 
-# -------------- Properties --------------
+    # region Properties
     @property
     def archive(self) -> Path:
         return self._archive
@@ -48,8 +48,9 @@ class FileOperator:
     @working_directory.setter
     def working_directory(self, directory) -> None:
         self._working_directory = Path(directory)
+    # endregion Properties
 
-# -------------- Static Methods --------------
+    # region Static Methods
     @staticmethod
     def _add_timestamp(file: str | Path) -> Path:
         """Renames a file, appending the current date and time."""
@@ -103,8 +104,9 @@ class FileOperator:
             _file.with_stem(f"{new_name}_{timestamp}"))
 
         return renamed_file
+    # endregion Static Methods
 
-# -------------- Instance Methods --------------
+    # region Instance Methods
     def archive_working_directory(self) -> int:
         """Moves files from the FileOperator's working directory to the archive directory."""
         archived_count: int = 0
@@ -151,9 +153,10 @@ class FileOperator:
             return True
         else:
             return False
+    # endregion
 
 
-# -------------- Functions --------------
+# region Functions
 def get_downloads_folder():
     """Checks the Windows Registry for the current user's Downloads directory."""
     with winreg.OpenKey(
@@ -163,3 +166,4 @@ def get_downloads_folder():
         downloads: Any = winreg.QueryValueEx(key, "{374DE290-123F-4565-9164-39C4925E467B}")[0]
 
         return downloads
+# endregion functions

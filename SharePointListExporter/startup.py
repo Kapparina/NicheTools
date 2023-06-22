@@ -6,6 +6,7 @@ from SharePointListExporter.Dependencies import FileOperator
 from SharePointListExporter.Dependencies import SeleniumEdge as Selene
 
 
+# region File Functions
 def archive_all(file_manager: FileOperator) -> int:
     """Moves files from a FileOperator's working directory to an archive directory."""
     archive_count: int = file_manager.archive_working_directory()
@@ -28,8 +29,10 @@ def load_json(file: str | Path) -> dict:
         data: dict = json.load(f)
 
     return data
+# endregion File Functions
 
 
+# region Browser Functions
 def browser_startup(driver_root: str | Path,
                     download_path: str | Path) -> Selene.Browser:
 
@@ -57,8 +60,10 @@ def browser_startup(driver_root: str | Path,
     browser.add_driver()
 
     return browser
+# endregion Browser Functions
 
 
+# region Iterable Functions
 def length_check(strings: iter) -> int:
     """Returns the length of the longest string in an iterable containing strings."""
     big_length: int = len(max(
@@ -66,3 +71,4 @@ def length_check(strings: iter) -> int:
         key=len))
 
     return big_length
+# endregion Iterable Functions

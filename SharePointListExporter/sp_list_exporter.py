@@ -1,29 +1,29 @@
-# -------------- Standard library packages --------------
 import time
 from pathlib import Path
 from datetime import datetime
 import json
 
-# -------------- Project-specific/local library packages --------------
 import SharePointListExporter.startup as startup
 import SharePointListExporter.Dependencies.FileOperations as Fops
 import SharePointListExporter.Dependencies.SeleniumEdge as Selene
 import SharePointListExporter.Dependencies.DataFrameCheck as DFCheck
 
-# -------------- Constants --------------
+# region Constants
 ALL_DIRS: dict = startup.load_json(file=Path("./Data/working_directories.json").resolve())  # All directories.
 ARCHIVE_DIR: Path = Path(ALL_DIRS["archive_directory"])  # Archive directory.
 DRIVER_DIR: Path = Path(ALL_DIRS["driver_directory"])  # Driver directory.
 NAME_TIMESTAMP: str = datetime.now().strftime("%Y%m%d_%H%M%S")  # Filename-formatted timestamp.
 USER_DOWNLOADS: Path = Path(Fops.get_downloads_folder())  # Current user's 'Downloads' directory.
 WORKING_DIR: Path = Path(ALL_DIRS["working_directory"])  # Working directory.
+# endregion Constants
 
-# -------------- Variables --------------
+# region Variables
 sp_lists: dict = startup.load_json(file=Path("./Data/lists.json").resolve())  # JSON file with SP list URLs.
 longest_key: int = startup.length_check(strings=sp_lists.keys())  # Length of longest key name in the variable above.
+# endregion Variables
 
 
-# -------------- Startup Function --------------
+# region Startup
 def initialize() -> tuple[Fops.FileOperator, Selene.Browser]:
     """Prepares directories for later functions."""
     file_helper: Fops.FileOperator = Fops.FileOperator(
@@ -41,14 +41,13 @@ def initialize() -> tuple[Fops.FileOperator, Selene.Browser]:
         download_path=WORKING_DIR)
 
     return file_helper, browser
+# endregion Startup
 
 
-# -------------- Browser Operations --------------
+# region Browser Operations
 def browser_actions(browser: Selene.Browser,
                     url: str) -> tuple:
     """Prepares and performs actions using a Selenium-based Edge WebDriver."""
-    # TODO: List of downloaded files.
-    # TODO: While loop using list of downloaded files, crosschecking old files.
     _browser: Selene.Browser = browser
     # file_helper: Fops.FileOperator = file_manager
     attempt_counter: int = 0
@@ -93,9 +92,10 @@ def browser_actions(browser: Selene.Browser,
             continue
 
     return click_attempt, attempt_counter
+# endregion Browser Operations
 
 
-# -------------- Main Function --------------
+# region Main Function
 def main() -> None:
     file_helper, browser = initialize()
     list_summaries: dict = {}
@@ -128,6 +128,7 @@ def main() -> None:
             obj=list_summaries,
             fp=summary_json,
             indent=4)
+# endregion Main Function
 
 
 if __name__ == '__main__':
