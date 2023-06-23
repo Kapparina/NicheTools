@@ -1,8 +1,13 @@
 from schedule import Scheduler
 import time
 from pathlib import Path
+from datetime import datetime, timedelta
 import json
 from subprocess import Popen
+import os
+
+
+CURRENT_TIME: str = datetime.now().strftime("%d/%m/%Y - %H:%M:%S")
 
 
 def load_json(file: str | Path) -> dict:
@@ -15,12 +20,19 @@ def load_json(file: str | Path) -> dict:
 
 
 def health_check(job_name) -> None:
-    print(f"Health check:\n"
+    print(f"---- Health check ----\n"
           f"Current job: {job_name}\n"
-          f"Current time: {time.ctime()}\n")
+          f"Job commencement time: {datetime.now().strftime('%d/%m/%Y - %H:%M:%S')}\n")
+
+
+def next_job_seconds(*seconds) -> float:
+    min_seconds: float = min(seconds)
+
+    return min_seconds
 
 
 def first_job(to_execute: str | Path) -> None:
+    os.system("cls")
     file: Path = Path(to_execute).resolve()
     health_check(job_name="Enlighten Data")
 
@@ -30,6 +42,7 @@ def first_job(to_execute: str | Path) -> None:
 
 
 def second_job(to_execute: str | Path) -> None:
+    os.system("cls")
     file: Path = Path(to_execute).resolve()
     health_check(job_name="RPA Processing Update")
 
@@ -39,7 +52,7 @@ def second_job(to_execute: str | Path) -> None:
 
 
 def run() -> None:
-    print(f"Commenced: {time.ctime()}\n")
+    print(f"Scheduling commenced: {CURRENT_TIME}\n")
 
     scheduler1 = Scheduler()
     scheduler2 = Scheduler()
@@ -48,16 +61,25 @@ def run() -> None:
     enlighten_data: str = files_to_execute["Enlighten Data"]
     rpa_update: str = files_to_execute["RPA Update"]
 
-    scheduler1.every().day.at("08:00").do(first_job, to_execute=enlighten_data)
-    scheduler2.every(15).minutes.do(second_job, to_execute=rpa_update)
+    scheduler1.every().day.at("08:00").do(
+        first_job,
+        to_execute=enlighten_data)
 
-    print(scheduler2.idle_seconds)
+    scheduler2.every(15).minutes.do(
+        second_job,
+        to_execute=rpa_update)
 
     while True:
         try:
             scheduler1.run_pending()
             scheduler2.run_pending()
-            time.sleep(1)
+
+            wait_time: float = next_job_seconds(
+                scheduler1.idle_seconds,
+                scheduler2.idle_seconds)
+
+            print(f"Next job at: {(datetime.now() + timedelta(seconds=wait_time)).strftime('%d/%m/%Y - %H:%M:%S')}")
+            time.sleep(wait_time)
         except Exception as e:
             print("Below exception raised. Attempting to continue in 10 seconds...")
             print(e)
