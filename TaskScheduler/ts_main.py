@@ -23,7 +23,7 @@ def load_json(file: str | Path) -> dict:
 def health_check(job_name) -> None:
     print(f"---- Health check ----\n"
           f"Current job: {job_name}\n"
-          f"Job commencement time: {CURRENT_TIME}\n")
+          f"Job commencement time: {datetime.now().strftime(TIME_FORMAT)}\n")
 
 
 def first_job(to_execute: str | Path) -> None:
