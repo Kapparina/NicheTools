@@ -55,7 +55,10 @@ def initialize() -> tuple[Fops.FileOperator, Selene.Browser]:
         file_manager=file_helper,
         directories=ALL_DIRS)
 
-    startup.archive_all(file_manager=file_helper)
+    if config["commencement_archive"]:
+        startup.archive_all(file_manager=file_helper)
+    else:
+        pass
 
     browser: Selene.Browser = startup.browser_startup(
         driver_root=DRIVER_DIR,
@@ -133,7 +136,6 @@ def main() -> None:
 
     file_helper, browser = initialize()
     list_summaries: dict = {}
-    completed_files: list = []
 
     for list_name, list_url in sorted(reports.items()):
         success_flag, attempt_count = browser_actions(
@@ -144,7 +146,7 @@ def main() -> None:
             list_summaries[list_name] = f"Failed after {attempt_count}."
         else:
             for file in WORKING_DIR.iterdir():
-                if file.is_file() and file not in completed_files:
+                if file.is_file():
 
                     if config["timestamp"]:
                         file: Path = file_helper.rename_with_timestamp(
@@ -158,12 +160,10 @@ def main() -> None:
                     print(f"{list_name:{longest_key}} {'|':^5} {row_count:,}")
                     list_summaries[list_name] = f"{row_count:04} - attempt #: {attempt_count}"
 
-                    if config["archive"]:
+                    if config["completion_archive"]:
                         file_helper.archive_working_directory()
                     else:
                         file_helper.working_to_downloads()
-
-                    completed_files.append(file)
 
     with open(
             file=f"{SUMMARY_DIR}/Summary_{NAME_TIMESTAMP}.json",

@@ -1,7 +1,7 @@
 {
   "archive_directory": "C:/temp/SeleneDownloads/Archive",
   "driver_directory": "C:/temp/SeleneDriver",
-  "final_directory": "C:/temp/temp/SeleneDownloads",
+  "final_directory": "C:/temp/SeleneDownloads",
   "working_directory": "C:/temp/SeleneTemp",
   "summary_directory": "C:/temp/SeleneSummary"
 }

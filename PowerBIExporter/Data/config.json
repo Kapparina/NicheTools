@@ -1,7 +1,8 @@
 {
     "first_run": false,
-    "headless": false,
-    "archive": false,
+    "headless": true,
+    "commencement_archive": true,
+    "completion_archive": false,
     "timestamp": true,
     "extension": "xlsx"
 }
