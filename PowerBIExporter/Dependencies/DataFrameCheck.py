@@ -3,9 +3,14 @@ from pathlib import Path
 
 
 # region Functions
-def dataframe_csv(csv_file: str | Path) -> pd.DataFrame:
+def df_spreadsheet(spreadsheet: str | Path) -> pd.DataFrame:
     """Creates a pandas DataFrame from a given CSV file."""
-    df = pd.read_csv(csv_file)
+    _spreadsheet: Path = Path(spreadsheet).resolve()
+
+    if _spreadsheet.suffix == ".csv":
+        df = pd.read_csv(spreadsheet)
+    else:
+        df = pd.read_excel(spreadsheet)
 
     return df
 
@@ -17,9 +22,9 @@ def count_rows(dataframe: pd.DataFrame) -> int:
     return row_count
 
 
-def csv_row_count(file: str | Path) -> int:
+def df_row_count(file: str | Path) -> int:
     """A wrapper function, creating a pandas DataFrame from a CSV file and counting the rows in that DataFrame."""
-    df: pd.DataFrame = dataframe_csv(csv_file=file)
+    df: pd.DataFrame = df_spreadsheet(spreadsheet=file)
     row_count: int = count_rows(dataframe=df)
 
     return row_count

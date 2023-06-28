@@ -1,12 +1,12 @@
 import PyInstaller.__main__
 
 PyInstaller.__main__.run([
-    'C:/Projects/NicheTools/LinkRunner/LinkRunner.spec',
+    'C:/Projects/NicheTools/PowerBIExporter/PowerBIExporter.spec',
     '--clean',
     '--distpath',
-    'C:/Projects/NicheTools/LinkRunner/Executables/linkrunner/dist',
+    'C:/Projects/NicheTools/PowerBIExporter/Executables/pbi_downloader/dist',
     '--workpath',
-    'C:/Projects/NicheTools/LinkRunner/Executables/linkrunner/build',
+    'C:/Projects/NicheTools/PowerBIExporter/Executables/pbi_downloader/build',
     '--upx-dir',
     'C:/upx-4.0.2-win64',
 ])

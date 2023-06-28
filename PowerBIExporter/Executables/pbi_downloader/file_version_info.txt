@@ -31,13 +31,13 @@ VSVersionInfo(
         '040904E4',
         [StringStruct('Comments', ''),
         StringStruct('CompanyName', ''),
-        StringStruct('FileDescription', 'Allows for filtering, searching and following hyperlinks.'),
+        StringStruct('FileDescription', 'Downloads a Power BI report as an Excel spreadsheet.'),
         StringStruct('FileVersion', '1.0.0'),
-        StringStruct('InternalName', 'LinkRunner.exe'),
+        StringStruct('InternalName', 'PowerBI_Downloader.exe'),
         StringStruct('LegalCopyright', ''),
         StringStruct('LegalTrademarks', ''),
-        StringStruct('OriginalFilename', 'LinkRunner.exe'),
-        StringStruct('ProductName', 'LinkRunner'),
+        StringStruct('OriginalFilename', 'PowerBI_Downloader.exe'),
+        StringStruct('ProductName', 'Power BI Downloader'),
         StringStruct('ProductVersion', '1.0.0')])
       ]), 
     VarFileInfo([VarStruct('Translation', [1033, 1252])])

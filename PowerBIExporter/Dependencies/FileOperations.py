@@ -13,10 +13,11 @@ class FileOperator:
     _working_directory: Path
 
     def __init__(self, recent_seconds=60,
-                 archive=None, working_directory=None) -> None:
+                 archive=None, working_directory=None,
+                 downloads=None) -> None:
 
         self._archive = archive
-        self._downloads = self.get_downloads_directory()
+        self._downloads = downloads
         self._recent_seconds = recent_seconds
         self._working_directory = working_directory
 
@@ -95,6 +96,16 @@ class FileOperator:
             return downloads
 
     @staticmethod
+    def remove_directory(to_remove: str | Path) -> Path | None:
+        directory: Path = Path(to_remove)
+
+        if directory.is_dir():
+            directory.rmdir()
+            return directory
+        else:
+            return None
+
+    @staticmethod
     def rename_with_timestamp(file: str | Path, new_name: str) -> Path:
         """Renames a given file using a specified name, appending the current date and time."""
         _file: Path = Path(file)
@@ -111,7 +122,7 @@ class FileOperator:
         """Moves files from the FileOperator's working directory to the archive directory."""
         archived_count: int = 0
 
-        for item in self.working_directory.iterdir():
+        for item in self.downloads.iterdir():
             if item.is_file():
                 shutil.move(
                     src=item,
@@ -144,6 +155,28 @@ class FileOperator:
             created_directories.append(new_dir)
 
         return created_directories
+
+    def remove_working_directory(self) -> Path | None:
+        if self.working_directory.is_dir():
+            self.working_directory.rmdir()
+            return self.working_directory
+        else:
+            return None
+
+    def working_to_downloads(self) -> int:
+        """Moves files from the FileOperator's working directory to the archive directory."""
+        moved_count: int = 0
+
+        for item in self.working_directory.iterdir():
+            if item.is_file():
+                shutil.move(
+                    src=item,
+                    dst=self.downloads)
+                moved_count += 1
+            else:
+                pass
+
+        return moved_count
 
     def recently_created(self, file: str | Path) -> bool:
         """Checks whether a file created fits within the definition of 'recently created'."""

@@ -1,5 +1,7 @@
 {
   "archive_directory": "C:/temp/SeleneDownloads/Archive",
   "driver_directory": "C:/temp/SeleneDriver",
-  "working_directory": "\\\\Melcorpsmb.apac.linkgroup.corp\\BluePRISM\\SmartAuto\\Correspondence Initiation\\DEV\\Incoming"
+  "final_directory": "C:/temp/temp/SeleneDownloads",
+  "working_directory": "C:/temp/SeleneTemp",
+  "summary_directory": "C:/temp/SeleneSummary"
 }

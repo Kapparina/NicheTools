@@ -2,8 +2,8 @@ import os
 import json
 from pathlib import Path
 
-from SharePointListExporter.Dependencies import FileOperator
-from SharePointListExporter.Dependencies import SeleniumEdge as Selene
+from PowerBIExporter.Dependencies import FileOperator
+from PowerBIExporter.Dependencies import SeleniumEdge as Selene
 
 
 # region File Functions
@@ -34,21 +34,17 @@ def load_json(file: str | Path) -> dict:
 
 # region Browser Functions
 def browser_startup(driver_root: str | Path,
-                    download_path: str | Path) -> Selene.Browser:
+                    download_path: str | Path,
+                    headless: bool) -> Selene.Browser:
 
     """Configures and instantiates a Browser"""
     _driver_root: str = str(driver_root)
     _download_path: str = str(download_path)
 
-    browser: Selene.Browser = Selene.Browser()
+    browser: Selene.Browser = Selene.Browser(headless=headless)
     browser.add_service(directory=_driver_root)
 
-    browser.add_options(
-        f"user-data-dir={os.getenv('TEMP')}")
-
-        # "headless=new",
-        # "disable-gpu",
-        # "window-size=1920,1080")
+    browser.add_options(f"user-data-dir={os.getenv('TEMP')}")
 
     browser.Options.add_experimental_option(
         "prefs",

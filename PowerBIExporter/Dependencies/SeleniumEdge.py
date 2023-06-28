@@ -1,5 +1,6 @@
 import os
 from typing import Any
+from subprocess import CREATE_NO_WINDOW
 
 from selenium.webdriver.edge.webdriver import WebDriver as EdgeDriver
 from selenium.webdriver.edge.service import Service as EdgeService
@@ -13,15 +14,28 @@ from selenium.common.exceptions import TimeoutException
 
 
 class Browser:
+    _headless: bool
     Service: EdgeService
     Options: EdgeOptions
     Driver: EdgeDriver
     Wait: WebDriverWait
 
-    def __init__(self):
+    def __init__(self, headless=False):
         self.Service = EdgeService()
         self.Options = EdgeOptions()
         self.Options.add_argument("user-agent=Mozilla/5.0")
+        self._headless = headless
+        self._headless_options()
+
+    # region Properties
+    @property
+    def headless(self) -> bool:
+        return self._headless
+
+    @headless.setter
+    def headless(self, toggle: bool) -> None:
+        self._headless = toggle
+        self._headless_options()
 
     # region Private Methods
     def _await_element_xpath(self, element: str) -> Any:
@@ -50,6 +64,15 @@ class Browser:
         return self.Driver.find_element(
             by=By.XPATH,
             value=frame)
+
+    def _headless_options(self) -> None:
+        if self.headless:
+            self.add_options(
+                "headless=new",
+                "disable-gpu",
+                "window-size=1920,1080")
+        else:
+            pass
     # endregion Private Methods
 
     # region Instantiation Methods
@@ -58,6 +81,7 @@ class Browser:
         os.environ["WDM_PROGRESS_BAR"]: str = str(0)
         service_path: str = EdgeChromiumDriverManager(path=directory).install()
         self.Service = EdgeService(executable_path=service_path)
+        self.Service.creation_flags = CREATE_NO_WINDOW
 
     def add_options(self, *options) -> None:
         """Adds options to the Browser's Options attribute."""
