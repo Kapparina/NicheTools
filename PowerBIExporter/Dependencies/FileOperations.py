@@ -106,6 +106,13 @@ class FileOperator:
             return None
 
     @staticmethod
+    def rename_file(file: str | Path, new_name: str) -> Path:
+        _file: Path = Path(file)
+        renamed_file: Path = _file.rename(_file.with_stem(new_name))
+
+        return renamed_file
+
+    @staticmethod
     def rename_with_timestamp(file: str | Path, new_name: str) -> Path:
         """Renames a given file using a specified name, appending the current date and time."""
         _file: Path = Path(file)

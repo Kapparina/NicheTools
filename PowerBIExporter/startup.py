@@ -21,6 +21,8 @@ def create_directories(file_manager: FileOperator,
     for key, value in directories.items():
         file_manager.create_directories(value)
 
+    file_manager.create_directories(file_manager.working_directory)
+
 
 def load_json(file: str | Path) -> dict:
     """Loads a JSON file and returns it."""

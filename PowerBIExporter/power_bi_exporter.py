@@ -14,11 +14,10 @@ import PowerBIExporter.Dependencies.DataFrameCheck as DFCheck
 ALL_DIRS: dict = startup.load_json(file=Path("Data/working_directories.json").resolve())
 ARCHIVE_DIR: Path = Path(ALL_DIRS["archive_directory"])
 DRIVER_DIR: Path = Path(ALL_DIRS["driver_directory"])
-FINAL_DIR: Path = Path(ALL_DIRS["final_directory"])
-NAME_TIMESTAMP: str = datetime.now().strftime("%Y%m%d_%H%M%S")
+DOWNLOAD_DIR: Path = Path(ALL_DIRS["download_directory"])
 SUMMARY_DIR: Path = Path(ALL_DIRS["summary_directory"])
-USER_DOWNLOADS: Path = Path(Fops.get_downloads_folder())
-WORKING_DIR: Path = Path(ALL_DIRS["working_directory"])
+WORKING_DIR: Path = Path("C:/temp/SeleneTemp")
+NAME_TIMESTAMP: str = datetime.now().strftime("%Y%m%d_%H%M%S")
 # endregion Constants
 
 # region Variables
@@ -49,7 +48,7 @@ def initialize() -> tuple[Fops.FileOperator, Selene.Browser]:
     file_helper: Fops.FileOperator = Fops.FileOperator(
         archive=ARCHIVE_DIR,
         working_directory=WORKING_DIR,
-        downloads=FINAL_DIR)
+        downloads=DOWNLOAD_DIR)
 
     startup.create_directories(
         file_manager=file_helper,
@@ -153,7 +152,9 @@ def main() -> None:
                             file=file,
                             new_name=list_name)
                     else:
-                        pass
+                        file: Path = file_helper.rename_file(
+                            file=file,
+                            new_name=list_name)
 
                     row_count: int = DFCheck.df_row_count(file=file)
 

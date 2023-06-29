@@ -1,6 +1,6 @@
 {
-    "first_run": false,
-    "headless": true,
+    "first_run": true,
+    "headless": false,
     "commencement_archive": true,
     "completion_archive": false,
     "timestamp": true,
