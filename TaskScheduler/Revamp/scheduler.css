@@ -1,0 +1,41 @@
+SchedulerScree {
+    layout: grid;
+    grid-size: 4;
+    grid-gutter: 2;
+    padding: 2;
+}
+
+Job {
+    dock: left;
+    width: 16;
+}
+
+JobListing {
+    layout: grid;
+    grid-size: 3;
+    grid-gutter: 2;
+    background: $boost;
+    height: 3;
+    margin: 1;
+    text-opacity: 60%;
+}
+
+#run {
+    dock: right;
+}
+
+#previous {
+}
+
+.previous_run {
+    text-style: bold;
+    color: $text;
+}
+
+.previous_run #blank {
+    display: none
+}
+
+.previous_run #previous {
+    display: none
+}
