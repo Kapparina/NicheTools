@@ -84,3 +84,30 @@ StartupScreen {
 #file_search #file_tree {
     margin: 1 2;
 }
+
+#name_dialogue {
+    grid-size: 1 3;
+    height: 1fr;
+    width: 1fr;
+    content-align: center middle;
+}
+
+#name_dialogue Input.-valid {
+    border: tall $success 60%;
+}
+
+#name_dialogue Input.-valid:focus {
+    border: tall $success;
+}
+
+#name_dialogue Input {
+    margin: 1 1;
+}
+
+#name_dialogue Label {
+    margin: 1 2;
+}
+
+#name_dialogue Pretty {
+    margin: 1 2;
+}

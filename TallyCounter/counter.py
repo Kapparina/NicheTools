@@ -1,38 +1,16 @@
 from pathlib import Path
 from typing import Iterable
-import tomlkit as tomk
-import tomllib as toml
+import json
+import string
 
+import textual.dom
 from textual import events, on
 from textual.app import App, ComposeResult, RenderResult
 from textual.containers import ScrollableContainer, Horizontal, Vertical, Grid
 from textual.reactive import reactive
 from textual.screen import Screen, ModalScreen
-from textual.validation import Validator, ValidationResult
+from textual.validation import Validator, ValidationResult, Function
 from textual.widgets import Static, Button, Header, Footer, Label, Input, Welcome, Pretty, DirectoryTree
-
-# TODO: REMOVE THIS!
-class Tally:
-    name = str
-    total: int
-
-    def __init__(self, name: str) -> None:
-        self._name = name
-        self._total = 0
-
-    @property
-    def total(self) -> int:
-        return self._total
-
-    @total.setter
-    def total(self, value: int) -> None:
-        self._total = value
-
-    def minus_one(self) -> None:
-        self._total -= 1
-
-    def plus_one(self) -> None:
-        self._total += 1
 
 
 class ValidPath(Validator):
@@ -43,14 +21,21 @@ class ValidPath(Validator):
             return self.failure("No such directory exists!")
 
 
+class ValidName(Validator):
+    def validate(self, value: str) -> ValidationResult:
+        if value.startswith(tuple(string.digits)):
+            return self.failure("The name cannot start with a number!")
+        elif len(value) < 1:
+            return self.failure("Enter a value!")
+        else:
+            return self.success()
+
+
 class Count(Static):
-    count_name: str
     count: reactive[int] = reactive(0)
 
     def on_mount(self) -> None:
-        self.count_name = self.name
-        self.count = int(self.classes)
-        # TODO: FIX THIS.
+        pass
 
     def watch_count(self, count: int) -> None:
         self.update(f"{count:^}")
@@ -63,6 +48,41 @@ class Count(Static):
 
 
 class Counter(Static):
+    name_value: str
+    new_name: str
+    start_count: int
+    final_count: int
+
+    def compose(self) -> ComposeResult:
+        self.name_value = self.name
+
+        if "^" in self.name:
+            self.new_name, self.start_count = self.name.split(sep="^")
+        else:
+            self.new_name, self.start_count = (self.name, 0)
+
+        self.border_title = self.new_name
+
+        with Horizontal():
+            with Vertical(id="left_column"):
+                yield Button(
+                    label="-1",
+                    id="minus",
+                    variant="error")
+
+            with Vertical(id="middle_column"):
+                new_count: Count = Count(
+                    id="count",
+                    name=self.new_name)
+                new_count.count = self.start_count
+                yield new_count
+
+            with Vertical(id="right_column"):
+                yield Button(
+                    label="+1",
+                    id="plus",
+                    variant="success")
+
     @on(Button.Pressed)
     def plus_minus(self, event: Button.Pressed) -> None:
         button_id: event = event.button.id
@@ -73,33 +93,12 @@ class Counter(Static):
         elif button_id == "plus":
             count.next_number()
 
-    def compose(self) -> ComposeResult:
-        self.border_title = "test"
-
-        with Horizontal():
-            with Vertical(id="left_column"):
-                yield Button(
-                    label="-1",
-                    id="minus",
-                    variant="error")
-
-            with Vertical(id="middle_column"):
-                yield Count(id="count", name="bob")
-                # TODO: FINISH THIS!
-
-            with Vertical(id="right_column"):
-                yield Button(
-                    label="+1",
-                    id="plus",
-                    variant="success")
-
 
 class StartupScreen(ModalScreen[bool]):
     def compose(self) -> ComposeResult:
-        # yield Input(placeholder="Tally Name")
         with Grid(id="startup_prompt"):
             yield Label(
-                renderable="Would you like to load data from a TXT file?",
+                renderable="Would you like to load data from a JSON file?",
                 id="question")
 
             yield Button(
@@ -107,7 +106,9 @@ class StartupScreen(ModalScreen[bool]):
                 id="load",
                 variant="primary")
 
-            yield Button(label="No", id="new", variant="default")
+            yield Button(
+                label="No",
+                id="new")
 
     @on(Button.Pressed)
     def load_prompt(self, event: Button.Pressed) -> None:
@@ -146,25 +147,75 @@ class FileScreen(Screen[Path]):
 
     @on(DirectoryTree.FileSelected)
     def show_valid_files(self, event: DirectoryTree.FileSelected) -> None:
-        if event.path.is_file() and event.path.suffix == ".toml":
+        if event.path.is_file() and event.path.suffix == ".json":
             self.dismiss(event.path)
         else:
             pass
 
 
 class CounterScreen(Screen):
+    BINDINGS = [
+        ("n", "add_counter", "Add New Counter")
+    ]
+
     def compose(self) -> ComposeResult:
+        yield Header()
+        yield Footer()
+
         with ScrollableContainer(id="counters"):
-            yield Header()
-            yield Footer()
-            yield Counter()
+            pass
+
+
+class CounterName(ModalScreen[str]):
+    BINDINGS = [
+        ("escape", "cancel", "Cancel")
+    ]
+
+    def compose(self) -> ComposeResult:
+        with Grid(id="name_dialogue"):
+            yield Label(
+                renderable="Please name your counter:",
+                id="name_prompt")
+
+            yield Input(
+                placeholder="Name, e.g. My_Counter_1",
+                validators=[
+                    Function(self.counter_exists, "This already exists!"),
+                    ValidName()
+                    ],
+                id="name_input")
+
+            yield Pretty(
+                object=["Enter something..."],
+                id="name_validation")
+
+    @on(Input.Changed)
+    def show_invalid_reasons(self, event: Input.Changed) -> None:
+        if not event.validation_result.is_valid:
+            self.query_one(Pretty).update(event.validation_result.failure_descriptions)
+        else:
+            self.query_one(Pretty).update(["This name is valid!"])
+
+    @on(Input.Submitted)
+    def create_timer(self, event: Input.Submitted) -> None:
+        if not event.validation_result.is_valid:
+            self.query_one(Pretty).update(event.validation_result.failure_descriptions)
+        else:
+            self.dismiss(event.value)
+
+    def counter_exists(self, value: str) -> bool:
+        try:
+            self.query_one(f"#{value}", Counter)
+            return True
+        except textual.dom.NoMatches:
+            return False
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
 
 
 class CounterApp(App):
     CSS_PATH = "./counter.css"
-    BINDINGS = [
-        ("n", "add_counter", "Add Counter")
-    ]
     tallies: dict
 
     def on_mount(self) -> None:
@@ -179,19 +230,29 @@ class CounterApp(App):
 
         self.push_screen(StartupScreen(), response)
 
-    def load_file(self, file: Path) -> None:
-        with open(
-                file=file,
-                mode="rb") as f:
+    async def load_file(self, file: Path) -> None:
+        with open(file=file) as f:
+            self.tallies = json.load(f)
 
-            try:
-                self.tallies: dict = toml.load(f)
+        await self.push_screen(CounterScreen())
+        self.load_counters()
 
-                if len(self.tallies) < 1:
-                    self.tallies: dict = {}
+    def load_counters(self) -> None:
+        for tally_name, tally_value in self.tallies.items():
+            new_counter: Counter = Counter(name=f"{tally_name}^{tally_value}")
+            self.query_one("#counters").mount(new_counter)
 
-            except toml.TOMLDecodeError:
-                self.tallies: dict = {}
+    def new_counter_prompt(self) -> None:
+        def response(name: str | None) -> None:
+            if name is not None:
+                self.push_screen(CounterName())
+        self.push_screen(CounterName(), )
+
+
+    def action_add_counter(self) -> None:
+        new_counter: Counter = Counter()
+        self.query_one("#counters").mount(new_counter)
+        new_counter.scroll_visible()
 
 
 if __name__ == '__main__':
