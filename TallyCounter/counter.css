@@ -12,7 +12,7 @@ Counter {
     border-title-color: white
 }
 
-#count {
+Count{
     content-align: center middle;
     box-sizing: content-box;
     background: darkred 30%;

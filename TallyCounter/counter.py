@@ -3,7 +3,7 @@ from typing import Iterable
 import json
 import string
 
-import textual.dom
+import textual.css.query
 from textual import events, on
 from textual.app import App, ComposeResult, RenderResult
 from textual.containers import ScrollableContainer, Horizontal, Vertical, Grid
@@ -22,11 +22,13 @@ class ValidPath(Validator):
 
 
 class ValidName(Validator):
+    valid: reactive[bool] = False
+
     def validate(self, value: str) -> ValidationResult:
-        if value.startswith(tuple(string.digits)):
-            return self.failure("The name cannot start with a number!")
-        elif len(value) < 1:
+        if len(value) < 1:
             return self.failure("Enter a value!")
+        elif value.startswith(tuple(string.digits)):
+            return self.failure("The name cannot start with a number!")
         else:
             return self.success()
 
@@ -119,6 +121,13 @@ class StartupScreen(ModalScreen[bool]):
 
 
 class FileScreen(Screen[Path]):
+    BINDINGS = [
+        ("escape", "cancel", "Cancel")
+    ]
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
+
     def compose(self) -> ComposeResult:
         with Vertical(id="file_search"):
             yield Label(
@@ -166,10 +175,13 @@ class CounterScreen(Screen):
             pass
 
 
-class CounterName(ModalScreen[str]):
+class CounterNameScreen(ModalScreen[str]):
     BINDINGS = [
         ("escape", "cancel", "Cancel")
     ]
+
+    def action_cancel(self) -> None:
+        self.dismiss(None)
 
     def compose(self) -> ComposeResult:
         with Grid(id="name_dialogue"):
@@ -180,9 +192,8 @@ class CounterName(ModalScreen[str]):
             yield Input(
                 placeholder="Name, e.g. My_Counter_1",
                 validators=[
-                    Function(self.counter_exists, "This already exists!"),
-                    ValidName()
-                    ],
+                    ValidName(),
+                    Function(self.no_counter_exists)],
                 id="name_input")
 
             yield Pretty(
@@ -203,15 +214,17 @@ class CounterName(ModalScreen[str]):
         else:
             self.dismiss(event.value)
 
-    def counter_exists(self, value: str) -> bool:
-        try:
-            self.query_one(f"#{value}", Counter)
-            return True
-        except textual.dom.NoMatches:
-            return False
-
-    def action_cancel(self) -> None:
-        self.dismiss(None)
+    def no_counter_exists(self, value: str) -> bool:
+        if len(value) >= 1:
+            try:
+                self.query_one(f"#{value}", Counter)
+                return False
+            except (textual.css.query.InvalidQueryFormat, StopIteration):
+                pass
+            except textual.css.query.NoMatches:
+                return True
+        else:
+            pass
 
 
 class CounterApp(App):
@@ -231,28 +244,32 @@ class CounterApp(App):
         self.push_screen(StartupScreen(), response)
 
     async def load_file(self, file: Path) -> None:
-        with open(file=file) as f:
-            self.tallies = json.load(f)
+        if file is not None:
+            with open(file=file) as f:
+                self.tallies = json.load(f)
 
-        await self.push_screen(CounterScreen())
-        self.load_counters()
+            await self.push_screen(CounterScreen())
+            self.load_counters()
+        else:
+            pass
 
     def load_counters(self) -> None:
         for tally_name, tally_value in self.tallies.items():
             new_counter: Counter = Counter(name=f"{tally_name}^{tally_value}")
             self.query_one("#counters").mount(new_counter)
 
-    def new_counter_prompt(self) -> None:
+    def action_add_counter(self) -> None:
         def response(name: str | None) -> None:
             if name is not None:
-                self.push_screen(CounterName())
-        self.push_screen(CounterName(), )
+                new_counter: Counter = Counter(
+                    name=name,
+                    id=name)
+                self.query_one("#counters").mount(new_counter)
+                new_counter.scroll_visible()
+            else:
+                pass
 
-
-    def action_add_counter(self) -> None:
-        new_counter: Counter = Counter()
-        self.query_one("#counters").mount(new_counter)
-        new_counter.scroll_visible()
+        self.push_screen(CounterNameScreen(), response)
 
 
 if __name__ == '__main__':
