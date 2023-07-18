@@ -3,11 +3,6 @@ from pathlib import Path
 from LinkRunner.CustomClasses import URL, Soup, VirtualMachine
 
 
-# def create_dataframe(_cols: dict[str, list]) -> pd.DataFrame:
-#     """Takes a dictionary (or dict-like) parameter and uses it to return a pandas DataFrame."""
-#     return pd.DataFrame.from_dict(_cols)
-
-
 def retrieve_links(url: str) -> dict:
     """Converts a URL to a filepath before fetching and returning hyperlinks."""
     converted_url: Path = URL(url).convert_to_filepath()
