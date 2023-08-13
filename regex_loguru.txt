@@ -1,11 +1,32 @@
-^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) \| ([A-Z]+) \| ([\w\.]+):\w+:?\d? - .+$
-
-^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) *\| ([A-Z]+) *\| ([\w\.]+):\w+:?\d* *- *.+$
-
-^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) *\| ([A-Z]+) *\| ([\w\.]+):.\w+.:\d* *- *.+$
-
 working:
 ^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) *\| ([A-Z]+) *\| ([\w\.]+):.\w+.:\d* *- *.+$
 
 testing:
 ^(?<timestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}) *\| (?<category>[A-Z]+) *\| (?<main>[\w\.]+):(?<module>.\w+.):(?<line>\d*) *- *(?<message>.+)
+
+format:
+^(?s)([^|]*)\|([^|]*)\|(.*)$
+
+datetime:
+yyyy-MM-dd HH:mm:ss.SSS
+
+time:
+(?)\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}
+
+critical:
+^\s*C(RITICAL)?\s*$
+
+error:
+^\s*E(RROR)?\s*$
+
+warning:
+^\s*W(ARN(ING)?)?\s*$
+
+info:
+^\s*I(NFO)?\s*$
+
+update:
+^\s*U(PDATE)?\s*$
+
+success:
+^\s*S(UCCE(SS)(EED))?\s*$
